@@ -1,0 +1,7 @@
+build.sh
+build-stamp
+cmake-tmp
+configure-stamp
+*.substvars
+*.debhelper*
+tmp
