@@ -2,9 +2,8 @@ Name:       minicontrol
 Summary:    minicontrol library
 Version:    0.0.16
 Release:    1
-VCS:        magnolia/apps/home/minicontrol#minicontrol_0.0.5-3-12-g9f2120dd83e9a1f726a621f2ac36bb6ddcce6e95
 Group:      TBD
-License:    TBD
+License:    Apache
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dbus-glib-1)
@@ -12,6 +11,7 @@ BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(evas)
 BuildRequires: pkgconfig(ecore-evas)
 BuildRequires: pkgconfig(dlog)
+BuildRequires: pkgconfig(bundle)
 BuildRequires: cmake
 Requires(post): /sbin/ldconfig
 requires(postun): /sbin/ldconfig
@@ -62,6 +62,7 @@ cp -f LICENSE %{buildroot}/usr/share/license/%{name}
 %{_libdir}/libminicontrol-provider.so*
 %{_libdir}/libminicontrol-viewer.so*
 %{_libdir}/libminicontrol-monitor.so*
+%{_libdir}/libminicontrol-handler.so*
 /usr/share/license/%{name}
 
 %files devel
@@ -70,4 +71,5 @@ cp -f LICENSE %{buildroot}/usr/share/license/%{name}
 %{_libdir}/pkgconfig/minicontrol-provider.pc
 %{_libdir}/pkgconfig/minicontrol-monitor.pc
 %{_libdir}/pkgconfig/minicontrol-viewer.pc
+%{_libdir}/pkgconfig/minicontrol-handler.pc
 

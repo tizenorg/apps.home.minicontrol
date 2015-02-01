@@ -1,20 +1,21 @@
 /*
- * Copyright 2012  Samsung Electronics Co., Ltd
+ * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
  *
- * Licensed under the Flora License, Version 1.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *  http://www.tizenopensource.org/license
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an AS IS BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
@@ -22,6 +23,7 @@
 #include "minicontrol-type.h"
 #include "minicontrol-internal.h"
 #include "minicontrol-log.h"
+#include "minicontrol-handler.h"
 
 #define MINICTRL_DBUS_PATH "/org/tizen/minicontrol"
 #define MINICTRL_DBUS_INTERFACE "org.tizen.minicontrol.signal"
@@ -139,13 +141,16 @@ release_n_return:
 
 int _minictrl_provider_message_send(const char *sig_name, const char *svr_name,
 				unsigned int witdh, unsigned int height,
-				minicontrol_priority_e priority)
+				minicontrol_priority_e priority,
+				minicontrol_h handler)
 {
 	DBusConnection *connection = NULL;
 	DBusMessage *message = NULL;
 	DBusError err;
 	dbus_bool_t dbus_ret;
 	int ret = MINICONTROL_ERROR_NONE;
+	int handler_raw_data_len = 0;
+	char *handler_raw_data = NULL;
 
 	if (!sig_name) {
 		ERR("sig_name is NULL, invaild parameter");
@@ -155,6 +160,10 @@ int _minictrl_provider_message_send(const char *sig_name, const char *svr_name,
 	if (!svr_name) {
 		ERR("svr_name is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
+	}
+
+	if (handler != NULL) {
+		_minictrl_handler_get_raw_data(handler, &handler_raw_data, &handler_raw_data_len);
 	}
 
 	dbus_error_init(&err);
@@ -175,12 +184,24 @@ int _minictrl_provider_message_send(const char *sig_name, const char *svr_name,
 		goto release_n_return;
 	}
 
-	dbus_ret = dbus_message_append_args(message,
-			DBUS_TYPE_STRING, &svr_name,
-			DBUS_TYPE_UINT32, &witdh,
-			DBUS_TYPE_UINT32, &height,
-			DBUS_TYPE_UINT32, &priority,
-			DBUS_TYPE_INVALID);
+
+	if (handler_raw_data != NULL && handler_raw_data_len > 0) {
+		dbus_ret = dbus_message_append_args(message,
+				DBUS_TYPE_STRING, &svr_name,
+				DBUS_TYPE_UINT32, &witdh,
+				DBUS_TYPE_UINT32, &height,
+				DBUS_TYPE_UINT32, &priority,
+				DBUS_TYPE_STRING, &handler_raw_data,
+				DBUS_TYPE_UINT32, &handler_raw_data_len,
+				DBUS_TYPE_INVALID);
+	} else {
+		dbus_ret = dbus_message_append_args(message,
+				DBUS_TYPE_STRING, &svr_name,
+				DBUS_TYPE_UINT32, &witdh,
+				DBUS_TYPE_UINT32, &height,
+				DBUS_TYPE_UINT32, &priority,
+				DBUS_TYPE_INVALID);
+	}
 	if (!dbus_ret) {
 		ERR("fail to append name to dbus message : %s", svr_name);
 		ret = MINICONTROL_ERROR_OUT_OF_MEMORY;

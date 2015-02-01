@@ -1,14 +1,14 @@
 /*
- * Copyright 2012  Samsung Electronics Co., Ltd
+ * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
  *
- * Licensed under the Flora License, Version 1.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *  http://www.tizenopensource.org/license
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an AS IS BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -19,6 +19,7 @@
 
 #include <minicontrol-error.h>
 #include <minicontrol-type.h>
+#include <minicontrol-handler.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +27,7 @@ extern "C" {
 
 /**
  * @file minicontrol-monitor.h
- * @brief This minicontrol monitor library used to manage events triggered by minicontrol provider
+ * @brief This minicontrol monitor library used to manage events triggered by minicontrol provider.
  */
 
 /**
@@ -35,14 +36,14 @@ extern "C" {
  */
 
   /**
- * @brief Called when event is triggered
+ * @brief Called when event is triggered.
  * @param[in] action The type of fired event
  * @param[in] name The name of provider
  * @param[in] width The width of provider
  * @param[in] height The height of provider
  * @param[in] priority The priority of provider
- * @param[in] data user data
- * @pre minicontrol_monitor_start() used to register this callback
+ * @param[in] data User data
+ * @pre minicontrol_monitor_start() used to register this callback.
  * @see #minicontrol_action_e
  * @see #minicontrol_priority_e
  */
@@ -52,17 +53,31 @@ typedef void (*minicontrol_monitor_cb) (minicontrol_action_e action,
 					unsigned int height,
 					minicontrol_priority_e priority,
 					void *data);
+typedef void (*minicontrol_monitor_with_handler_cb) (minicontrol_action_e action,
+					const char *name,
+					unsigned int width,
+					unsigned int height,
+					minicontrol_priority_e priority,
+					minicontrol_h handler,
+					void *data);
+
+/**
+ * @brief Registers a callback for events originated by minicontrol provider.
+ * @param[in] callback Callback function
+ * @param[in] data User data
+ */
+minicontrol_error_e minicontrol_monitor_start(minicontrol_monitor_cb callback,
+					void *data);
 
 /**
  * @brief Register a callback for events originated by minicontrol provider
  * @param[in] callback callback function
  * @param[in] data user data
  */
-minicontrol_error_e minicontrol_monitor_start(minicontrol_monitor_cb callback,
-					void *data);
-
+minicontrol_error_e minicontrol_monitor_start_with_handler(
+				minicontrol_monitor_with_handler_cb callback, void *data);
 /**
- * @brief Unregister a callback for events originated by minicontrol provider
+ * @brief Unregisters a callback for events originated by minicontrol provider.
  * @return #MINICONTROL_ERROR_NONE if success, other value if failure
  * @see #minicontrol_error_e
  */

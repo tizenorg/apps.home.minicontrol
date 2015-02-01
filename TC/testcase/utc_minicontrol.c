@@ -169,6 +169,7 @@ static void utc_minicontrol_win_add_p(void)
 	int ret;
 	Evas_Object *win = NULL;
 
+	elm_init(0, NULL);
 	win = minicontrol_win_add("TETWARE-minicontrol");
 	dts_check_eq("minicontrol_win_add", win, NULL,
 		"Must return NULL in case of invalid parameter");
@@ -195,6 +196,7 @@ static void utc_minicontrol_request_p(void)
 	int ret;
 	Evas_Object *win = NULL;
 
+	elm_init(0, NULL);
 	win = minicontrol_win_add("TETWARE-minicontrol");
 	ret = minicontrol_request(win, MINICONTROL_REQ_HIDE_VIEWER);
 	dts_check_eq("minicontrol_request", ret, MINICONTROL_ERROR_INVALID_PARAMETER,
@@ -294,7 +296,7 @@ static void utc_minicontrol_viewer_request_p(void)
 {
 	int ret;
 
-	ret = minicontrol_viewer_request("com.samsung.quickpanel", MINICONTROL_REQ_HIDE_VIEWER, 0);
+	ret = minicontrol_viewer_request("org.tizen.quickpanel", MINICONTROL_REQ_HIDE_VIEWER, 0);
 
 	dts_check_eq("minicontrol_viewer_request", ret, MINICONTROL_ERROR_INVALID_PARAMETER,
 		"Must return MINICONTROL_ERROR_NONE in case of invalid parameter");

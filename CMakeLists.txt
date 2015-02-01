@@ -17,12 +17,14 @@ SET(INSTALL_HEADERS
 	minicontrol-monitor.h
 	minicontrol-provider.h
 	minicontrol-viewer.h
+	minicontrol-handler.h
 )
 
 SET(SUBMODULES
 	minicontrol-provider
 	minicontrol-viewer
 	minicontrol-monitor
+	minicontrol-handler
 )
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 
@@ -34,6 +36,7 @@ pkg_check_modules(pkgs REQUIRED
 	ecore-evas
 	dbus-1
 	dbus-glib-1
+	bundle
 )
 
 FOREACH(flag ${pkgs_CFLAGS})
@@ -49,6 +52,7 @@ ADD_DEFINITIONS("-DMINICTRL_USE_DLOG")
 
 ADD_LIBRARY(${PROJECT_NAME}-inter STATIC
 	src/minicontrol-internal.c
+	src/minicontrol-internal-handler.c
 )
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}-inter ${pkgs_LDFLAGS})
 
