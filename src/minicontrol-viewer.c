@@ -1,14 +1,14 @@
 /*
- * Copyright 2012  Samsung Electronics Co., Ltd
+ * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
  *
- * Licensed under the Flora License, Version 1.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *  http://www.tizenopensource.org/license
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an AS IS BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -39,7 +39,8 @@ static void _minictrl_plug_server_del(Ecore_Evas *ee)
 	/* send message to remve plug */
 	_minictrl_provider_message_send(MINICTRL_DBUS_SIG_STOP,
 					svr_name, 0, 0,
-					MINICONTROL_PRIORITY_LOW);
+					MINICONTROL_PRIORITY_LOW, NULL);
+	_minictrl_provider_proc_send(MINICONTROL_DBUS_PROC_INCLUDE);
 }
 
 static void _minictrl_plug_del(void *data, Evas *e,
@@ -78,7 +79,7 @@ EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent,
 		return NULL;
 	}
 
-	if (!elm_plug_connect(plug, svr_name, 0, EINA_FALSE)) {
+	if (!elm_plug_connect(plug, svr_name, 0, EINA_TRUE)) {
 		ERR("Cannot connect plug[%s]", svr_name);
 		evas_object_del(plug);
 		return NULL;
@@ -94,5 +95,25 @@ EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent,
 					_minictrl_plug_del, plug);
 
 	return plug;
+}
+
+EXPORT_API minicontrol_error_e minicontrol_viewer_request(const char *appid, minicontrol_request_e request, int value)
+{
+	int ret = MINICONTROL_ERROR_NONE;
+
+	if (appid == NULL) {
+		ERR("appid is NULL, invaild parameter");
+		return MINICONTROL_ERROR_INVALID_PARAMETER;
+	}
+	if (request != MINICONTROL_REQ_ROTATE_PROVIDER
+		&& request != MINICONTROL_REQ_PROVIDER_PAUSE
+		&& request != MINICONTROL_REQ_PROVIDER_RESUME) {
+		return MINICONTROL_ERROR_INVALID_PARAMETER;
+	}
+
+	ret = _minictrl_provider_message_send(MINICTRL_DBUS_SIG_REQUEST,
+			appid, request, value, MINICONTROL_PRIORITY_MIDDLE, NULL);
+
+	return ret;
 }
 
