@@ -14,17 +14,18 @@ SET(CMAKE_SKIP_BUILD_RPATH true)
 SET(INSTALL_HEADERS
 	minicontrol-error.h
 	minicontrol-type.h
+	minicontrol-internal.h
 	minicontrol-monitor.h
 	minicontrol-provider.h
+	minicontrol-provider-internal.h
 	minicontrol-viewer.h
-	minicontrol-handler.h
+	minicontrol-viewer-internal.h
 )
 
 SET(SUBMODULES
 	minicontrol-provider
 	minicontrol-viewer
 	minicontrol-monitor
-	minicontrol-handler
 )
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 
@@ -43,7 +44,7 @@ FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
 ENDFOREACH(flag)
 
-SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fvisibility=hidden -g -Wall -fPIC")
+SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fvisibility=hidden -g -Wall -fPIC ")
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 
@@ -52,7 +53,6 @@ ADD_DEFINITIONS("-DMINICTRL_USE_DLOG")
 
 ADD_LIBRARY(${PROJECT_NAME}-inter STATIC
 	src/minicontrol-internal.c
-	src/minicontrol-internal-handler.c
 )
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}-inter ${pkgs_LDFLAGS})
 

@@ -17,28 +17,32 @@
 #ifndef _MINICTRL_ERROR_H_
 #define _MINICTRL_ERROR_H_
 
+#include <tizen_error.h>
+
 /**
  * @file minicontrol-error.h
  * @brief Minicontrol library error type.
  */
 
 /**
- * @addtogroup MINICONTROL_MONITOR_MODULE
+ * @addtogroup MINICONTROL_LIBRARY
  * @{
  */
 
 /**
  * @brief Enumeration for describing error code of minicontrol library.
+ * @since_tizen 2.4
  */
 typedef enum _minicontrol_error {
-	MINICONTROL_ERROR_NONE = 0,					/**< MiniControl error none */
-	MINICONTROL_ERROR_INVALID_PARAMETER = -1,	/**< Invalid parameter */
-	MINICONTROL_ERROR_OUT_OF_MEMORY = -2,		/**< Out of memory */
-	MINICONTROL_ERROR_DBUS = -3,				/**< Dbus error */
-	MINICONTROL_ERROR_BUNDLE = -4,
-	MINICONTROL_ERROR_NO_DATA = -5,
-	MINICONTROL_ERROR_UNKNOWN = -100,			/**< Unknown error */
-}minicontrol_error_e;
+	MINICONTROL_ERROR_NONE = TIZEN_ERROR_NONE,  /**< MiniControl error none */
+	MINICONTROL_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,  /**< Invalid parameter */
+	MINICONTROL_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,  /**< Out of memory */
+	MINICONTROL_ERROR_PERMISSION_DENIED = TIZEN_ERROR_PERMISSION_DENIED, /**< Permission denied */
+	MINICONTROL_ERROR_IPC_FAILURE = TIZEN_ERROR_MINICONTROL | 0x02,  /**< IPC error */
+	MINICONTROL_ERROR_NOT_SUPPORTED = TIZEN_ERROR_NOT_SUPPORTED, /**< This function is not supported */
+	MINICONTROL_ERROR_ELM_FAILURE = TIZEN_ERROR_MINICONTROL | 0x03,  /**< Some error occurred when creating a minicontrol window */
+	MINICONTROL_ERROR_UNKNOWN = TIZEN_ERROR_UNKNOWN,  /**< Unknown error */
+} minicontrol_error_e;
 
 /**
  * @}

@@ -26,33 +26,16 @@
  *    <th>Description</th>
  * </tr>
  * <tr>
- *    <td>@ref MINICONTROL_MONITOR_MODULE </td>
- *    <td>Provides functions for monitoring and viewing EFL socket window.</td>
- * </tr>
- * <tr>
  *    <td>@ref MINICONTROL_PROVIDER_MODULE </td>
- *    <td>Provides functions for creating EFL socket window.</td>
+ *    <td>Provides functions for creating EFL socket window. Application developers can make a minicontrol by composing ELF objects on this socket window</td>
  * </tr>
  * <tr>
  *    <td>@ref MINICONTROL_VIEWER_MODULE </td>
- *    <td>Provides functions for displaying EFL socket window.</td>
+ *    <td>Provides functions for displaying EFL socket window.<br>
+ *    minicontrol holders calls this functions to attach minicontrols on UI area.</td>
  * </tr>
  * </table>
  */
-
-
-/**
- * @defgroup MINICONTROL_MONITOR_MODULE Monitor
- * @brief Minicontrol Monitor APIs
- * @ingroup MINICONTROL_LIBRARY
- *
- * @section MINICONTROL_MONITOR_MODULE_HEADER Required Header
- *   \#include <minicontrol-minitor.h>
- * @section MINICONTROL_MONITOR_MODULE_OVERVIEW Overview
- * It provides functions for monitoring and viewing EFL socket window.
- *
- */
-
 
 /**
  * @defgroup MINICONTROL_PROVIDER_MODULE  Provider
@@ -65,7 +48,6 @@
  * It provides functions for creating EFL socket window.
  *
  */
-
 
 /**
  * @defgroup MINICONTROL_VIEWER_MODULE  Viewer

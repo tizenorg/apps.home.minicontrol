@@ -17,8 +17,11 @@
 #ifndef _MINICONTROL_H_DEF_
 #define _MINICONTROL_H_DEF_
 
+#include <minicontrol-internal.h>
 #include <minicontrol-provider.h>
+#include <minicontrol-provider_internal.h>
 #include <minicontrol-viewer.h>
-#include <minicontrol-monitor.h>
+#include <minicontrol-viewer_internal.h>
+
 
 #endif /* _MINICONTROL_H_DEF_ */

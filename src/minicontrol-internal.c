@@ -15,15 +15,14 @@
  */
 
 #include <stdlib.h>
-#include <unistd.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
+#include <bundle.h>
 
 #include "minicontrol-error.h"
 #include "minicontrol-type.h"
 #include "minicontrol-internal.h"
 #include "minicontrol-log.h"
-#include "minicontrol-handler.h"
 
 #define MINICTRL_DBUS_PATH "/org/tizen/minicontrol"
 #define MINICTRL_DBUS_INTERFACE "org.tizen.minicontrol.signal"
@@ -53,7 +52,7 @@ int _minictrl_viewer_req_message_send(void)
 	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
 	if (!connection) {
 		ERR("Fail to dbus_bus_get : %s", err.message);
-		ret = MINICONTROL_ERROR_DBUS;
+		ret = MINICONTROL_ERROR_IPC_FAILURE;
 		goto release_n_return;
 	}
 
@@ -69,7 +68,7 @@ int _minictrl_viewer_req_message_send(void)
 	dbus_ret = dbus_connection_send(connection, message, NULL);
 	if (!dbus_ret) {
 		ERR("fail to send dbus viewer req message");
-		ret = MINICONTROL_ERROR_DBUS;
+		ret = MINICONTROL_ERROR_IPC_FAILURE;
 		goto release_n_return;
 	}
 
@@ -109,7 +108,7 @@ int _minictrl_provider_proc_send(int type)
 	conn = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
 	if (!conn) {
 		ERR("Fail to dbus_bus_get : %s", err.message);
-		ret = MINICONTROL_ERROR_DBUS;
+		ret = MINICONTROL_ERROR_IPC_FAILURE;
 		goto release_n_return;
 	}
 	msg = dbus_message_new_signal(PROC_DBUS_OBJECT, // object name of the signal
@@ -139,44 +138,30 @@ release_n_return:
 
 }
 
-int _minictrl_provider_message_send(const char *sig_name, const char *svr_name,
-				unsigned int witdh, unsigned int height,
-				minicontrol_priority_e priority,
-				minicontrol_h handler)
+int _minictrl_send_event(const char *signal_name, const char *minicontrol_name, int event, bundle *signal_arg)
 {
 	DBusConnection *connection = NULL;
 	DBusMessage *message = NULL;
 	DBusError err;
 	dbus_bool_t dbus_ret;
+	bundle_raw *serialized_arg = NULL;
+	unsigned int serialized_arg_length = 0;
 	int ret = MINICONTROL_ERROR_NONE;
-	int handler_raw_data_len = 0;
-	char *handler_raw_data = NULL;
 
-	if (!sig_name) {
-		ERR("sig_name is NULL, invaild parameter");
+	if (minicontrol_name == NULL) {
+		ERR("Invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
-	}
-
-	if (!svr_name) {
-		ERR("svr_name is NULL, invaild parameter");
-		return MINICONTROL_ERROR_INVALID_PARAMETER;
-	}
-
-	if (handler != NULL) {
-		_minictrl_handler_get_raw_data(handler, &handler_raw_data, &handler_raw_data_len);
 	}
 
 	dbus_error_init(&err);
 	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
 	if (!connection) {
 		ERR("Fail to dbus_bus_get : %s", err.message);
-		ret = MINICONTROL_ERROR_DBUS;
+		ret = MINICONTROL_ERROR_IPC_FAILURE;
 		goto release_n_return;
 	}
 
-	message = dbus_message_new_signal(MINICTRL_DBUS_PATH,
-				MINICTRL_DBUS_INTERFACE,
-				sig_name);
+	message = dbus_message_new_signal(MINICTRL_DBUS_PATH, MINICTRL_DBUS_INTERFACE, signal_name);
 
 	if (!message) {
 		ERR("fail to create dbus message");
@@ -184,34 +169,36 @@ int _minictrl_provider_message_send(const char *sig_name, const char *svr_name,
 		goto release_n_return;
 	}
 
-
-	if (handler_raw_data != NULL && handler_raw_data_len > 0) {
-		dbus_ret = dbus_message_append_args(message,
-				DBUS_TYPE_STRING, &svr_name,
-				DBUS_TYPE_UINT32, &witdh,
-				DBUS_TYPE_UINT32, &height,
-				DBUS_TYPE_UINT32, &priority,
-				DBUS_TYPE_STRING, &handler_raw_data,
-				DBUS_TYPE_UINT32, &handler_raw_data_len,
-				DBUS_TYPE_INVALID);
-	} else {
-		dbus_ret = dbus_message_append_args(message,
-				DBUS_TYPE_STRING, &svr_name,
-				DBUS_TYPE_UINT32, &witdh,
-				DBUS_TYPE_UINT32, &height,
-				DBUS_TYPE_UINT32, &priority,
-				DBUS_TYPE_INVALID);
+	if (signal_arg != NULL) {
+		if (bundle_encode(signal_arg, &serialized_arg, (int*)&serialized_arg_length) != BUNDLE_ERROR_NONE) {
+			ERR("fail to serialize bundle argument");
+			ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
+			goto release_n_return;
+		}
 	}
+	else {
+		serialized_arg = (bundle_raw*)strdup("");
+		serialized_arg_length = 0;
+	}
+
+	dbus_ret = dbus_message_append_args(message,
+			DBUS_TYPE_STRING, &minicontrol_name,
+			DBUS_TYPE_INT32,  &event,
+			DBUS_TYPE_STRING, &serialized_arg,
+			DBUS_TYPE_UINT32,  &serialized_arg_length,
+			DBUS_TYPE_INVALID);
+
 	if (!dbus_ret) {
-		ERR("fail to append name to dbus message : %s", svr_name);
+		ERR("fail to append arguments to dbus message : [%s][%d]", minicontrol_name, event);
 		ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
 		goto release_n_return;
 	}
 
 	dbus_ret = dbus_connection_send(connection, message, NULL);
+
 	if (!dbus_ret) {
-		ERR("fail to send dbus message : %s", svr_name);
-		ret = MINICONTROL_ERROR_DBUS;
+		ERR("fail to send dbus message : %s", minicontrol_name);
+		ret = MINICONTROL_ERROR_IPC_FAILURE;
 		goto release_n_return;
 	}
 
@@ -219,6 +206,9 @@ int _minictrl_provider_message_send(const char *sig_name, const char *svr_name,
 
 release_n_return:
 	dbus_error_free(&err);
+
+	if (serialized_arg)
+		free(serialized_arg);
 
 	if (message)
 		dbus_message_unref(message);
@@ -229,8 +219,38 @@ release_n_return:
 	return ret;
 }
 
-static DBusHandlerResult _minictrl_signal_filter(DBusConnection *conn,
-		DBusMessage *msg, void *user_data)
+
+int _minictrl_provider_message_send(int event, const char *minicontrol_name, unsigned int witdh, unsigned int height, minicontrol_priority_e priority)
+{
+	bundle *event_arg_bundle = NULL;
+	int ret = MINICONTROL_ERROR_NONE;
+	char bundle_value_buffer[BUNDLE_BUFFER_LENGTH] = { 0, };
+
+	event_arg_bundle = bundle_create();
+
+	if (event_arg_bundle == NULL) {
+		ERR("fail to create a bundle instance");
+		ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	snprintf(bundle_value_buffer, BUNDLE_BUFFER_LENGTH, "%s", minicontrol_name);
+
+	bundle_add_str(event_arg_bundle, "minicontrol_name", bundle_value_buffer);
+	bundle_add_byte(event_arg_bundle, "width", (void*)&witdh, sizeof(int));
+	bundle_add_byte(event_arg_bundle, "height", (void*)&height, sizeof(int));
+	bundle_add_byte(event_arg_bundle, "priority", (void*)&priority, sizeof(int));
+
+	_minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER, minicontrol_name, event, event_arg_bundle);
+
+out:
+	if (event_arg_bundle)
+		bundle_free(event_arg_bundle);
+
+	return ret;
+}
+
+static DBusHandlerResult _minictrl_signal_filter(DBusConnection *conn, DBusMessage *msg, void *user_data)
 {
 	minictrl_sig_handle *handle = NULL;
 	const char *interface;
@@ -353,8 +373,7 @@ void _minictrl_dbus_sig_handle_dettach(minictrl_sig_handle *handle)
 
 	dbus_error_init(&err);
 
-	dbus_connection_remove_filter(handle->conn,
-			_minictrl_signal_filter, handle);
+	dbus_connection_remove_filter(handle->conn, _minictrl_signal_filter, handle);
 
 	snprintf(rule, 1024,
 		"path='%s',type='signal',interface='%s',member='%s'",

@@ -23,63 +23,116 @@
  */
 
 /**
- * @addtogroup MINICONTROL_MONITOR_MODULE
+ * @addtogroup MINICONTROL_LIBRARY
  * @{
  */
 
-typedef struct _minicontrol_h *minicontrol_h;
+#ifndef DEPRECATED
+#define DEPRECATED                        __attribute__((deprecated))
+#endif /* DEPRECATED */
 
 /**
- * @brief Enumeration for describing type of events originated by a minicontrol provider.
- */
-typedef enum _minicontrol_action {
-	MINICONTROL_ACTION_START = 0,    /**< A minicontrol object is created */
-	MINICONTROL_ACTION_STOP,    /**< A minicontrol object is deleted */
-	MINICONTROL_ACTION_RESIZE,    /**< A minicontrol object is resized */
-	MINICONTROL_ACTION_REQUEST,    /**< the viewer of the minicontrol object is asked to do something */
-	MINICONTROL_ACTION_REALIZE,    /**< the viewer of the minicontrol object is realized */
-} minicontrol_action_e;
+@section MINICONTROL_LIBRARY_EVENTS Events
+
+<TABLE>
+<TR>
+<TD>Event Type</TD><TD>Originated by</TD>
+<TD>Argument 1 Key</TD><TD>Argument 1 Type</TD>
+<TD>Argument 2 Key</TD><TD>Argument 2 Type</TD>
+<TD>Argument 3 Key</TD><TD>Argument 3 Type</TD>
+</TR>
+<TR>
+<TD>MINICONTROL_EVENT_START</TD><TD>provider</TD>
+<TD>minicontrol_name</TD><TD>string</TD>
+<TD>width</TD><TD>integer</TD>
+<TD>height</TD><TD>integer</TD>
+</TR>
+<TR>
+<TD>MINICONTROL_EVENT_STOP</TD><TD>provider</TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+</TR>
+<TR>
+<TD>MINICONTROL_EVENT_RESIZE</TD><TD>provider</TD>
+<TD>minicontrol_name</TD><TD>string</TD>
+<TD>width</TD><TD>integer</TD>
+<TD>height</TD><TD>integer</TD>
+</TR>
+<TR>
+<TD>MINICONTROL_EVENT_REQUEST_HIDE</TD><TD>provider</TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+</TR>
+<TR>
+<TD>MINICONTROL_EVENT_REQUEST_ANGLE</TD><TD>provider</TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+</TR>
+<TR>
+<TD>MINICONTROL_EVENT_REPORT_ANGLE</TD><TD>viewer</TD>
+<TD>angle</TD><TD>string</TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+</TR>
+<TR>
+<TD>MINICONTROL_VIEWER_EVENT_SHOW</TD><TD>viewer</TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+</TR>
+<TR>
+<TD>MINICONTROL_VIEWER_EVENT_HIDE</TD><TD>viewer</TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+</TR>
+</TABLE>
+*/
 
 /**
- * @brief Enumeration for describing priority of a minicontrol provider.
+ * @brief Enumerations for describing types of events originated by a minicontrol provider.
+ * @since_tizen 2.4
  */
 typedef enum {
-	MINICONTROL_PRIORITY_TOP = 1000,    /**< Top priority */
-	MINICONTROL_PRIORITY_MIDDLE = 100,    /**< Middle priority */
-	MINICONTROL_PRIORITY_LOW = 1,    /**< Low priority */
-}minicontrol_priority_e;
+	MINICONTROL_EVENT_START,               /**< A minicontrol object is created */
+	MINICONTROL_EVENT_STOP,                /**< A minicontrol object is deleted */
+	MINICONTROL_EVENT_RESIZE,              /**< A minicontrol object is resized */
+	MINICONTROL_EVENT_REQUEST_HIDE  = 100, /**< Requests that the minicontrol viewer(s) close the provider's minicontrol */
+	MINICONTROL_EVENT_REQUEST_ANGLE = 103, /**< Requests the current angle of the minicontrol viewer */
+	MINICONTROL_EVENT_REPORT_ANGLE  = 200, /**< Reports the current angle of the minicontrol viewer */
+} minicontrol_event_e;
 
 /**
- * @brief Enumeration for describing type of actions.
+ * @brief Enumerations for types of events which will be sent by minicontrol_send_event.
+ * @since_tizen 2.4
  */
 typedef enum {
-	MINICONTROL_REQ_NONE = 0,/**< Request to viewer */
-
-	/*!
-	 * request to viewer
-	 */
-	MINICONTROL_REQ_HIDE_VIEWER = 100,    /**< Request to hide the minicontrol viewer */
-	MINICONTROL_REQ_FREEZE_SCROLL_VIEWER,    /**< Request to freeze scroll of the minicontrol viewer */
-	MINICONTROL_REQ_UNFREEZE_SCROLL_VIEWER,    /**< Request to unfreeze scroll of the minicontrol viewer */
-	MINICONTROL_REQ_REPORT_VIEWER_ANGLE,    /**< Request to report the current angle of the minicontrol viewer */
-	MINICONTROL_REQ_UPDATE_HANDLER,
-
-	/*!
-	 * request to provider
-	 */
-	MINICONTROL_REQ_ROTATE_PROVIDER = 200,	/**< Request to provider */
-	MINICONTROL_REQ_PROVIDER_PAUSE = 201,
-	MINICONTROL_REQ_PROVIDER_RESUME = 202,
-}minicontrol_request_e;
+	MINICONTROL_PROVIDER_EVENT_REQUEST_HIDE  = MINICONTROL_EVENT_REQUEST_HIDE,  /**< Requests that the minicontrol viewer(s) close the provider's minicontrol. Required bundle argument : NULL. */
+	MINICONTROL_PROVIDER_EVENT_REQUEST_ANGLE = MINICONTROL_EVENT_REQUEST_ANGLE, /**< Requests the current angle of the minicontrol viewer. Required bundle argument : NULL. */
+} minicontrol_provider_event_e;
 
 /**
- * @brief Enumeration for describing type of dbus.
+ * @brief Enumerations for types of events which will be sent by minicontrol_viewer_send_event.
+ * @since_tizen 2.4
  */
+typedef enum {
+	MINICONTROL_VIEWER_EVENT_REPORT_ANGLE    = MINICONTROL_EVENT_REPORT_ANGLE,  /**< Reports the current angle of the minicontrol viewer. Required argument : Angle of minicontrol viewer, Bundle Key : "angle", Bundle Value Type : string.*/
+	MINICONTROL_VIEWER_EVENT_SHOW            = 201, /**< The minicontrol viewer is shown. Required argument : NULL.*/
+	MINICONTROL_VIEWER_EVENT_HIDE            = 202, /**< The minicontrol viewer is hidden. Required argument : NULL.*/
+} minicontrol_viewer_event_e;
 
-enum _minictrl_PROC_DBUS_TYPE {
-	MINICONTROL_DBUS_PROC_EXCLUDE,    /**< Request to exclude from the unfreezing process list */
-	MINICONTROL_DBUS_PROC_INCLUDE,    /**< Request to include to the unfreezing process list */
-};
+/**
+ * @brief Enumerations for selecting target viewers.
+ * @since_tizen 2.4
+ */
+typedef enum {
+	MINICONTROL_TARGET_VIEWER_QUICK_PANEL             = 0x0001,   /**< Request to place the minicontrol on the quickpanel */
+	MINICONTROL_TARGET_VIEWER_STOCK_LOCK_SCREEN       = 0x0002,   /**< Request to place the minicontrol on the stock lock screen */
+	MINICONTROL_TARGET_VIEWER_CUSTOM_LOCK_SCREEN      = 0x0004,   /**< Request to place the minicontrol on a lock screen replacement application */
+} minicontrol_target_viewer_e;
 
 /**
  * @}
